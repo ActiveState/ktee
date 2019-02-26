@@ -44,8 +44,10 @@ func main() {
 	var producer sarama.SyncProducer
 
 	if len(cfg.Brokers) > 0 {
+        saramaCfg := sarama.NewConfig()
+        saramaCfg.Producer.Return.Successes = true
 		brokers := strings.Split(cfg.Brokers, ",")
-		producer, err = sarama.NewSyncProducer(brokers, sarama.NewConfig())
+		producer, err = sarama.NewSyncProducer(brokers, saramaCfg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to Kafka brokers: %s\n", err)
 			os.Exit(1)
