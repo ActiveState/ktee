@@ -18,6 +18,7 @@ type config struct {
 	Brokers  string      `env:"KTEE_BROKERS"`
 	OutTopic string      `env:"KTEE_OUT_TOPIC"`
 	ErrTopic string      `env:"KTEE_ERR_TOPIC"`
+    MsgKey   string      `env:"KTEE_MSG_KEY"`
 }
 
 func main() {
@@ -64,8 +65,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	kwOut := kafkaWriter{producer, os.Stdout, cfg.OutTopic, new(bytes.Buffer), make(chan sarama.ProducerMessage)}
-	kwErr := kafkaWriter{producer, os.Stderr, cfg.ErrTopic, new(bytes.Buffer), make(chan sarama.ProducerMessage)}
+	kwOut := kafkaWriter{producer, os.Stdout, cfg.OutTopic, cfg.MsgKey, new(bytes.Buffer), make(chan sarama.ProducerMessage)}
+	kwErr := kafkaWriter{producer, os.Stderr, cfg.ErrTopic, cfg.MsgKey, new(bytes.Buffer), make(chan sarama.ProducerMessage)}
 
 	defer func() {
 		kwOut.Flush()
