@@ -36,7 +36,7 @@ func (w kafkaWriter) Sender() {
 
 func (w kafkaWriter) send() error {
     pkg := "Core"
-    r := regexp.MustCompile("^pkg: (.*)");
+    r := regexp.MustCompile("^--- pkg: (.*)");
 	for {
 		ln, err := w.buffer.ReadBytes('\n')
 		if err != nil {
