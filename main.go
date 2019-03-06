@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Shopify/sarama"
 	"github.com/ian-kent/gofigure"
-	"github.com/shopify/sarama"
 )
 
 type config struct {
@@ -18,7 +18,7 @@ type config struct {
 	Brokers  string      `env:"KTEE_BROKERS"`
 	OutTopic string      `env:"KTEE_OUT_TOPIC"`
 	ErrTopic string      `env:"KTEE_ERR_TOPIC"`
-    MsgKey   string      `env:"KTEE_MSG_KEY"`
+	MsgKey   string      `env:"KTEE_MSG_KEY"`
 }
 
 func main() {
@@ -45,8 +45,8 @@ func main() {
 	var producer sarama.SyncProducer
 
 	if len(cfg.Brokers) > 0 {
-        saramaCfg := sarama.NewConfig()
-        saramaCfg.Producer.Return.Successes = true
+		saramaCfg := sarama.NewConfig()
+		saramaCfg.Producer.Return.Successes = true
 		brokers := strings.Split(cfg.Brokers, ",")
 		producer, err = sarama.NewSyncProducer(brokers, saramaCfg)
 		if err != nil {
