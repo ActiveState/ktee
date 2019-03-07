@@ -4,26 +4,27 @@ import (
 	"bytes"
 	"io"
 
-    "encoding/json"
-    "fmt"
-    "time"
-    "regexp"
-	"github.com/shopify/sarama"
+	"encoding/json"
+	"fmt"
+	"regexp"
+	"time"
+
+	"github.com/Shopify/sarama"
 )
 
 type kafkaWriter struct {
 	producer sarama.SyncProducer
 	writer   io.Writer
 	topic    string
-    key      string
+	key      string
 	buffer   *bytes.Buffer
 	messages chan sarama.ProducerMessage
 }
 
 type logMessage struct {
-    TimeStamp  string   `json:"ts"`
-    Package    string   `json:"package"`
-    LogLine    string   `json:"logline"`
+	TimeStamp string `json:"ts"`
+	Package   string `json:"package"`
+	LogLine   string `json:"logline"`
 }
 
 func (w kafkaWriter) Sender() {
@@ -35,8 +36,8 @@ func (w kafkaWriter) Sender() {
 }
 
 func (w kafkaWriter) send() error {
-    pkg := "Core"
-    r := regexp.MustCompile("^--- pkg: (.*)");
+	pkg := "Core"
+	r := regexp.MustCompile("^--- pkg: (.*)")
 	for {
 		ln, err := w.buffer.ReadBytes('\n')
 		if err != nil {
@@ -47,28 +48,28 @@ func (w kafkaWriter) send() error {
 			break
 		}
 
-        msg := ln[:len(ln)-1]
-        if p := r.FindSubmatch(msg); p != nil {
-            pkg = string(p[1])
-        }
+		msg := ln[:len(ln)-1]
+		if p := r.FindSubmatch(msg); p != nil {
+			pkg = string(p[1])
+		}
 
-        lm := logMessage{time.Now().UTC().Format("2006-01-02'T'03-04-05.000'Z'-0700"),
-            pkg, string(msg)}
-        jm, err := json.Marshal(lm)
-        if err != nil {
-            fmt.Printf("json marshalling error: %v\n", err)
-            continue
-        }
+		lm := logMessage{time.Now().UTC().Format("2006-01-02'T'03-04-05.000'Z'-0700"),
+			pkg, string(msg)}
+		jm, err := json.Marshal(lm)
+		if err != nil {
+			fmt.Printf("json marshalling error: %v\n", err)
+			continue
+		}
 		message := &sarama.ProducerMessage{
 			Topic: w.topic,
-             Key: sarama.StringEncoder(w.key),
+			Key:   sarama.StringEncoder(w.key),
 			Value: sarama.StringEncoder(jm),
 		}
 
 		go func(m *sarama.ProducerMessage) {
 			if _, _, err := w.producer.SendMessage(message); err != nil {
 				if err != nil {
-                    fmt.Printf("error sending message: %s\n", err)
+					fmt.Printf("error sending message: %s\n", err)
 					// TODO: handle errors, buffer, etc
 				}
 				err = w.writer.(io.Closer).Close()
